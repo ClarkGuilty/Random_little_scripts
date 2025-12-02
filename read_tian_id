@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 'Tile...RA...DEC...'" >&2
+  exit 2
+fi
+
+INPUT="$1"
+
+PROG="python_read_tian_id.py"
+if [ ! -x "$PROG" ]; then
+  echo "Error: $PROG not found or not executable." >&2
+  echo "Place $PROG in PATH or next to this script and make it executable." >&2
+  exit 1
+fi
+
+# Run the python program and capture output (stdout+stderr)
+if ! OUTPUT="$("$PROG" "$INPUT" 2>&1)"; then
+  echo "Error running $PROG:" >&2
+  echo "$OUTPUT" >&2
+  exit 1
+fi
+
+# Print output to terminal
+printf '%s\n' "$OUTPUT"
+
+# Copy to macOS clipboard if pbcopy exists
+if command -v pbcopy >/dev/null 2>&1; then
+  printf '%s' "$OUTPUT" | pbcopy
+#  echo "Copied to clipboard."
+else
+  echo "Warning: pbcopy not found — cannot copy to clipboard." >&2
+fi
